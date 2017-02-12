@@ -1,0 +1,1 @@
+{"mainServerUrl":"wss://iot.geroix.com/gero.ashx","gerokey":"33017b63-7f93-426a-9e6b-cf0da4ca1fe7","localWebServerListeningPort":8000,"configRequestRetryInMillis":2000,"ipAddress":["192.168.1.8","192.168.2.1"],"lastInitialization":{"id":1,"ts":1486920049320,"code":0}}

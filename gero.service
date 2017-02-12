@@ -1,0 +1,10 @@
+[Unit]
+Description=Geroix Gero app
+
+[Service]
+ExecStart=/opt/geroix/gero/start.sh
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
+Alias=gero.service
