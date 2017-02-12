@@ -1,3 +1,4 @@
+const fs = require('fs');
 const os = require('os');
 const util = require('util');
 const constants = require('./constants');
