@@ -20,7 +20,7 @@ case "$1" in
 
  stop)
   echo "Stopping Gero"
-  ret=$(ps aux | grep 'node app.js' | awk '{print $2}')
+  ret=$(ps aux | grep 'node index.js' | awk '{print $2}')
   echo "Removing node by running >kill ${ret}"
   kill ${ret}
   ;;
@@ -28,7 +28,7 @@ case "$1" in
 
  restart)
   echo "Stopping Gero"
-  ret=$(ps aux | grep 'node app.js' | awk '{print $2}')
+  ret=$(ps aux | grep 'node index.js' | awk '{print $2}')
   echo "Removing node by running >kill ${ret}"
   sh /opt/geroix/gero/start.sh
   echo "Starting Gero done"
