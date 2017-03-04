@@ -23,7 +23,7 @@ function puts(error, stdout, stderr) {
 var bluegiga = null;
 
 function getBlueGiga() {
-	if(null !== bluegiga) {
+	if(null === bluegiga) {
 		try {
 			bluegiga = require('./bluegiga');
 			console.log('BlueGiga module loaded.');
@@ -141,9 +141,13 @@ this.runApp = function(appobj) {
 	else {
 		switch (appobj.apptype || 0) {
 			case constants.APPID_ColorPickerRgb:
-				gero.rgbBleState = appobj.state || 0;
-				getBlueGiga().sendled(appobj.red || 0, appobj.green || 0, appobj.blue || 0);
-				console.log('bluegiga ret: ' + util.inspect(ret, null, null));
+				rgbBleState = appobj.state || 0;
+				var bg = getBlueGiga();
+				if(null === bg)
+					ret.addError('Unable to communicate with the m-light using BLE.');
+				else
+					bg.sendled(appobj.red || 0, appobj.green || 0, appobj.blue || 0);
+				//console.log('bluegiga ret: ' + util.inspect(ret, null, null));
 				break;
 
 			case constants.APPID_Shift8_595:

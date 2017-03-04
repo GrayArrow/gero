@@ -1,7 +1,4 @@
-var fs = require('fs');
 const sleep = require('sleep');
-const util = require('util');
-const app = require('./index');
 var config = require('./config.all.json');
 var vendorGpio = null;
 if (config.osInfo.isArduino)
@@ -54,18 +51,6 @@ gpio.prototype.init = function() {
 				
 				var value = self.getHwState();
 				console.log('GpioTypeButton: GPIO(' + self.id + ') ' + self.name + ': callback value: ' + value);
-
-				//var leds = gero.findAllLeds();
-				//var led2light = 0;
-				//if (leds.length > 1)
-				//	led2light = Math.floor((Math.random() * leds.length));
-				//if(leds.length) {
-				//	//var gpioled = hwNode.findFirstLed();
-				//	var gpioled = leds[led2light];
-				//	gpioled.setHwState(value, true);
-				//	
-				//	gpiosToSend.push(gpioled);
-				//}
 
 				gero.sendEventsForGpios(gpiosToSend);
 			});
