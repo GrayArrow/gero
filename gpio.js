@@ -22,6 +22,7 @@ const CONST_GpioTypeOnOff = 5;
 const CONST_GpioTypeDigitalInput = 6;
 const CONST_GpioTypeInOut = 10;
 const CONST_GpioTypeAnalogInput = 11;
+const CONST_GpioTypeUnavailable = 12;
 
 //const CONST_DefaultPwmMaxValue = 1000;
 
@@ -76,43 +77,46 @@ gpio.prototype.init = function() {
 		case CONST_GpioTypeInOut:
 			this.vendorHw = vendorGpio.createOutput(this.pin);
 			break;
-		
+
 		case CONST_GpioTypePwm:
 			this.vendorHw = vendorGpio.createOutputPwm(this.pin, this.maxValue);
 			break;
-		
+
 		case CONST_GpioTypeDigitalInput:
 			this.vendorHw = vendorGpio.createInput(this.pin);
 			break;
-		
+
 		case CONST_GpioTypeAnalogInput:
 			this.vendorHw = vendorGpio.createInput(this.pin, true);
 			break;
-		
+
+		case CONST_GpioTypeUnavailable:
+			break;
+
 		default:
 			break;
 	}
-}
+};
 gpio.prototype.getTypeId = function() {
     if (skky.isNullOrUndefined(this.GpioType))
         return 0;
 
     return (this.GpioType.id || 0);
-}
+};
 
 gpio.prototype.getTypeName = function() {
     if (skky.isNullOrUndefined(this.GpioType))
         return '';
 
     return (this.GpioType.name || '').toLowerCase();
-}
+};
 gpio.prototype.getTypeNameLower = function() {
     return this.getTypeName().toLowerCase();
-}
+};
 
 gpio.prototype.isPwm = function() {
 	return (this.getTypeId() == CONST_GpioTypePwm);
-}
+};
 
 gpio.prototype.hasLogicalState = function() {
 	switch(this.getTypeId()) {
@@ -122,7 +126,7 @@ gpio.prototype.hasLogicalState = function() {
 	}
 	
 	return true;
-}
+};
 
 gpio.prototype.getHwStateJson = function() {
     this.getHwState();
@@ -137,7 +141,7 @@ gpio.prototype.getHwStateJson = function() {
 	};
 
 //    return iot.getWithEvent(this.id, this.isActiveLow, state, this.vstate);
-}
+};
 
 gpio.prototype.getHwState = function() {
 	var fname = 'getHwState: ';
@@ -168,23 +172,25 @@ gpio.prototype.getHwState = function() {
 	}
 
 	return this.state;
-}
+};
 
 gpio.prototype.setHwState = function(state, isVoltageState) {
 	var fname = 'gpio.setHwState: ';
 
+	var vstate = 0;
+	
 	switch(this.getTypeId()) {
 		case CONST_GpioTypeLed:
 		case CONST_GpioTypeOnOff:
 		case CONST_GpioTypeInOut:
 			// Always use voltage states.
-			var vstate = ((isVoltageState || 0) ? state : iot.getLogicalState(state, this.isActiveLow));
+			vstate = ((isVoltageState || 0) ? state : iot.getLogicalState(state, this.isActiveLow));
 			//console.log(fname + this.id + ' pin ' + this.pin + ', vstate: ' + vstate + ', state: ' + state + ', isVoltageState: ' + (isVoltageState || 0) + ', isActiveLow: ' + this.isActiveLow);
 			this.vendorHw.write(vstate);
 
 			break;
 		case CONST_GpioTypePwm:
-			var vstate = ((isVoltageState || 0) ? state : iot.getLogicalState(state, this.isActiveLow, this.minValue, this.maxValue));
+			vstate = ((isVoltageState || 0) ? state : iot.getLogicalState(state, this.isActiveLow, this.minValue, this.maxValue));
 			//console.log(fname + this.id + ' pin ' + this.pin + ', vstate: ' + vstate + ', state: ' + state + ', isVoltageState: ' + (isVoltageState || 0) + ', isActiveLow: ' + this.isActiveLow);
 			this.vendorHw.writePwm(vstate);
 			break;
@@ -192,26 +198,30 @@ gpio.prototype.setHwState = function(state, isVoltageState) {
 		default:
 			throw fname + 'This GPIO ' + this.name + ' (' + this.id + ') on pin ' + this.pin + ' of type ' + this.getTypeName() + ' does not support setting the hardware state.';
 	}
-}
+};
 
-gpio.prototype.off = function() { this.setHwState(0); }
-gpio.prototype.on = function() { this.setHwState(1); }
+gpio.prototype.off = function() {
+	this.setHwState(0);
+};
+gpio.prototype.on = function() {
+	this.setHwState(1);
+};
 
 gpio.prototype.setAsInput = function() {
 	this.vendorHw.setAsInput();
-}
+};
 gpio.prototype.setAsOutput = function() {
 	this.vendorHw.setAsOutput();
-}
+};
 gpio.prototype.readRaw = function() {
 	this.vendorHw.read();
-}
+};
 gpio.prototype.turnOff = function() {
 	this.vendorHw.write(0);
-}
+};
 gpio.prototype.turnOn = function() {
 	this.vendorHw.write(1);
-}
+};
 
 gpio.prototype.morseCode = function(mcstr) {
     var _baseTime = 128000, //micro seconds
@@ -261,13 +271,13 @@ gpio.prototype.morseCode = function(mcstr) {
           '9': '____.',
           '0': '_____'
        },
-       active: function(t) {
+       active: function() {
           this.setHwState(1);
        },
        inactive: function() {
           this.setHwState(0);
        }
-    }
+    };
      
     var _t = text.split('');
      
@@ -298,8 +308,8 @@ gpio.prototype.morseCode = function(mcstr) {
           console.log();
        }
     }
-}
+};
 
 this.getNew = function(jo) {
 	return new gpio(jo);
-}
+};

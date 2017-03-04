@@ -25,7 +25,7 @@ define('CMDCODE_GeroGetState', 9);
 define('CMDCODE_GpioGetState', 10);
 define('CMDCODE_GetState', 11);
 define('CMDCODE_ChartRequest', 12);
-define('CMDCODE_GeroApplicationRun', 13);
+define('CMDCODE_ApplicationRun', 13);
 define('CMDCODE_SaveApplication', 14);
 define('CMDCODE_ApplicationRefresh', 15);
 define('CMDCODE_GetOsInfo', 16);
@@ -35,6 +35,7 @@ define('CMDCODE_BluetoothInitGero', 23);
 define('CMDCODE_BluetoothInitGpio', 24);
 define('CMDCODE_GeneralMessage', 25);
 define('CMDCODE_ApplicationState', 26);
+define('CMDCODE_FileSystem', 27);
 
 // Application Ids
 define('APPID_Shift8_595', 1);
@@ -52,6 +53,10 @@ define('APPID_CoffeeMaker', 12);
 define('APPID_PushButton', 13);
 define('APPID_EegDetector', 14);
 define('APPID_GeneralMessage', 15);
+define('APPID_SystemCommand', 16);
+define('APPID_Accelerometer', 17);
+define('APPID_HallEffectSensor', 18);
+define('APPID_Beacon', 19);
 
 exports.getApplicationAsText = function(apptype) {
 	switch (skky.nonNull(apptype)) {
@@ -85,6 +90,14 @@ exports.getApplicationAsText = function(apptype) {
             return 'EegDetector';
         case this.APPID_GeneralMessage:
             return 'GeneralMessage';
+        case this.APPID_SystemCommand:
+            return 'SystemCommand';
+        case this.APPID_Accelerometer:
+            return 'Accelerometer';
+        case this.APPID_HallEffectSensor:
+            return 'HallEffectSensor';
+        case this.APPID_Beacon:
+            return 'Beacon';
 	}
 	
 	return '';
@@ -116,8 +129,8 @@ exports.getCommandAsText = function(cmd) {
 			return 'GetState';
 		case this.CMDCODE_ChartRequest:
 			return 'ChartRequest';
-		case this.CMDCODE_GeroApplicationRun:
-			return 'GeroApplicationRun';
+		case this.CMDCODE_ApplicationRun:
+			return 'ApplicationRun';
 		case this.CMDCODE_ApplicationRefresh:
 			return 'ApplicationRefresh';
 		case this.CMDCODE_GetOsInfo:
@@ -134,6 +147,8 @@ exports.getCommandAsText = function(cmd) {
 			return 'GeneralMessage';
         case this.CMDCODE_ApplicationState:
             return 'ApplicationState';
+        case this.CMDCODE_FileSystem:
+            return 'FileSystem';
 	}
 	
 	return '';

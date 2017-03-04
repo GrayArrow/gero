@@ -7,7 +7,6 @@ var wscomm = require('./wscomm');
 const httpcomm = require('./httpcomm');
 
 var blegero = null;
-var bluegiga = null;
 var osinfo = {};
 
 try {
@@ -16,14 +15,6 @@ try {
 }
 catch(errblegro) {
 	console.log('app Bluetooth init error: ' + errblegro.message);
-}
-
-try {
-	bluegiga = require('./bluegiga');
-	console.log('BlueGiga module loaded.');
-}
-catch(errblue) {
-	console.log('BlueGiga init error: ' + errblue.message);
 }
 
 // Configuration file support.
@@ -332,42 +323,13 @@ function processCommand(cmd) {
 
 			break;
 		
-		case constants.CMDCODE_GeroApplicationRun:
-			console.log('Received Gero Application command.');
-			console.log(obj);
+		case constants.CMDCODE_ApplicationRun:
+			console.log('Received Gero Application command: ' + util.inspect(obj, null, null));
 			appobj = skky.getObject(obj);
-			if (skky.isNullOrUndefined(appobj)) {
-				console.log('Could not run application. Invalid object.');
-			}
-			else {
-				switch (appobj.apptype || 0) {
-					case constants.APPID_ColorPickerRgb:
-						gero.rgbBleState = appobj.state || 0;
-						bluegiga.sendled(appobj.red || 0, appobj.green || 0, appobj.blue || 0);
-						console.log('bluegiga ret: ' + util.inspect(ret, null, null));
-						break;
-					
-					case constants.APPID_Shift8_595:
-						ret = gero.shift8_595(appobj.sdiid, appobj.rclkid, appobj.srclkid, appobj.val, appobj.byteShiftCount, appobj.ishex || false, appobj.delay || 0);
-						console.log('Shift595 ret: ' + util.inspect(ret, null, null));
-						if (!ret.allGood()) {
-							console.log('shift8_595 errors: ' + util.inspect(ret, null, null));
-						}
-						break;
-					
-					case constants.APPID_LightMeter:
-						ret = gero.appLightMeter(appobj.gpioid);
-						console.log('Light Meter ret: ' + util.inspect(ret, null, null));
-						if (!ret.allGood()) {
-							console.log('Light Meter errors: ' + util.inspect(ret, null, null));
-						}
-						break;
-					
-					default:
-						ret.addError(fname + 'Attempt to run invalid Application with ID: ' + appobj.apptype + '.');
-						break;
-				}
-			}
+
+			var appret = gero.runApp(appobj);
+			if(null !== appret)
+				ret = appret;
 			break;
 
 		case constants.CMDCODE_ApplicationState:
@@ -412,7 +374,7 @@ function processCommand(cmd) {
 				ret.addError(err.message);
 			}
 			break;
-			
+
 		default:
 			s = fname + 'Could not find command: ' + cmd.code + '.';
 			ret.addError(s);
@@ -437,13 +399,13 @@ function processCommands(jo) {
 	const fname = 'processCommands: ';
 	var iotmain = null;
 	//console.log(fname + util.inspect(jo, true, null));
-	
+
 	for(var cmd = null, index = 0; cmd = skky.getObject(jo.c, index); ++index) {
 		try {
 			//console.log(fname + 'Received ' + constants.getCommandAsText(cmd.code || 0) + ' (' + (cmd.code || 0) + ')');
 
 			var iotcmdWithRet = processCommand(cmd);
-			
+
 			if (skky.isNullOrUndefined(iotcmdWithRet)) {
 				console.log(fname + 'NO iotcmdWithRet from ' + constants.getCommandAsText(cmd.code || 0) + '.');
 			}
