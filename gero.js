@@ -7,6 +7,35 @@ const iot = require('./iot');
 const gpio = require('./gpio');
 const app = require('./index');
 
+var exec = require('child_process').exec;
+
+function puts(error, stdout, stderr) {
+	//console.log(stdout);
+	if (error) {
+		console.error(`exec error: ${error}`);
+		return;
+	}
+
+	console.log(`stdout: ${stdout}`);
+	console.log(`stderr: ${stderr}`);
+}
+
+var bluegiga = null;
+
+function getBlueGiga() {
+	if(null !== bluegiga) {
+		try {
+			bluegiga = require('./bluegiga');
+			console.log('BlueGiga module loaded.');
+		}
+		catch(errblue) {
+			console.log('BlueGiga init error: ' + errblue.message);
+		}
+	}
+	
+	return bluegiga;
+}
+
 this.id = 0;
 this.name = 'name';
 this.url = '';
@@ -100,6 +129,51 @@ this.addNewGpio = function(jo) {
 	this.gpios.push(gp);
 
 	return gp;
+};
+
+this.runApp = function(appobj) {
+	var fname = 'runApp: ';
+	var ret = iot.getBase();
+
+	if (skky.isNullOrUndefined(appobj)) {
+		console.log('Could not run application. Invalid object.');
+	}
+	else {
+		switch (appobj.apptype || 0) {
+			case constants.APPID_ColorPickerRgb:
+				gero.rgbBleState = appobj.state || 0;
+				getBlueGiga().sendled(appobj.red || 0, appobj.green || 0, appobj.blue || 0);
+				console.log('bluegiga ret: ' + util.inspect(ret, null, null));
+				break;
+
+			case constants.APPID_Shift8_595:
+				ret = this.shift8_595(appobj.sdiid, appobj.rclkid, appobj.srclkid, appobj.val, appobj.byteShiftCount, appobj.ishex || false, appobj.delay || 0);
+				console.log('Shift595 ret: ' + util.inspect(ret, null, null));
+				if (!ret.allGood()) {
+					console.log('shift8_595 errors: ' + util.inspect(ret, null, null));
+				}
+				break;
+
+			case constants.APPID_LightMeter:
+				ret = this.appLightMeter(appobj.gpioid);
+				console.log('Light Meter ret: ' + util.inspect(ret, null, null));
+				if (!ret.allGood()) {
+					console.log('Light Meter errors: ' + util.inspect(ret, null, null));
+				}
+				break;
+
+			case constants.APPID_SystemCommand:
+				console.log(fname + 'running System Command: ' + appobj.syscmd);
+				exec(appobj.syscmd, puts);
+				break;
+
+			default:
+				ret.addError(fname + 'Attempt to run invalid Application with ID: ' + appobj.apptype + '.');
+				break;
+		}
+	}
+
+	return ret;
 };
 
 this.getAppStateJson = function(obj) {
@@ -210,7 +284,7 @@ this.getStateJsonFromId = function(gpioid) {
 
 	try {
 		gp = this.findGpio(gpioid);
-		if (null != gp)
+		if (null !== gp)
 			objretarr = this.getStateJson(gp);
 	}
 	catch(ex) {
@@ -245,7 +319,7 @@ this.getStateJson = function(gpios) {
 				}
 			}
 		}
-		else if (null != gpios) {	// We were just one object.
+		else if (null !== gpios) {	// We were just one object.
 			objretarr.push(gpios.getHwStateJson());
 		}
 	}
@@ -440,7 +514,7 @@ this.shift8_595raw = function(gsdi, grclk, gsrclk, ch) {
 	if (skky.isNullOrUndefined(ch)) {
 		return 'shift8_595raw: received NaN. Not writing. No action taken.';
 	}
-	else if (null == gsdi || null == grclk || null == gsrclk) {
+	else if (null === gsdi || null === grclk || null === gsrclk) {
 		return 'shift8_595raw: No GPIO.';
 	}
 	console.log('shift8_595raw: writing value of ' + ch + '.');
@@ -450,12 +524,12 @@ this.shift8_595raw = function(gsdi, grclk, gsrclk, ch) {
 	var ctr = 0;
 	while(true) {
 		var c = skky.getObject(ch, ctr);
-		if (null == c)
+		if (null === c)
 			break;
 console.log('writing: ' + c);
 		for(var i = 0; i < 8; ++i) {
 			var bit = c & mask[i];
-	console.log('bit: ' + bit)
+	console.log('bit: ' + bit);
 			gsdi.setHwState(bit ? 1 : 0);
 			gsrclk.on();
 			sleep.usleep(2);
@@ -502,7 +576,7 @@ this.appLightMeter = function(gpioid) {
 };
 
 function readTemp(fileid) {
-	var fname = 'readTemp: ';
+	//var fname = 'readTemp: ';
 
 	var buffer = fs.readFileSync('/sys/bus/w1/devices/' + fileid + '/w1_slave');
 	if (skky.hasData(buffer)) {
