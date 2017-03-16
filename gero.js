@@ -12,12 +12,12 @@ var exec = require('child_process').exec;
 function puts(error, stdout, stderr) {
 	//console.log(stdout);
 	if (error) {
-		console.error(`exec error: ${error}`);
+		console.error('exec error: ' + error);
 		return;
 	}
 
-	console.log(`stdout: ${stdout}`);
-	console.log(`stderr: ${stderr}`);
+	console.log('stdout: ' + stdout);
+	console.log('stderr: ' + stderr);
 }
 
 var bluegiga = null;
